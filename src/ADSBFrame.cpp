@@ -7,6 +7,13 @@ ADSBFrame::ADSBFrame(const std::vector<uint8_t>& buffer) {
             rawData = buffer;
             df = (buffer[0] >> 3) & 0x1F;  // Extract DF
             tc = (buffer[4] >> 3) & 0x1F;  // Extract TC
+
+            // Extract callsign
+            if (df == 17) {
+                if (tc >= 4 && tc <= 7) {
+                    extractCallSign();
+                }
+            }
         } else {
             throw std::invalid_argument("Invalid frame size");
         }
