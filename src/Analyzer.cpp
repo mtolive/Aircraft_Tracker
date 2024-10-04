@@ -3,12 +3,14 @@
 void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
     try {
         ADSBFrame frame(buffer);  // Create an ADSBFrame instance
-        
+        Decoder decoder;
         // Apply filters using the Filter class
         if (Filter::filterByDownlinkFormat(frame, 17)) {
             //frame.printHex();  // Print only if it matches the DF filter
-            if (Filter::filterByTypeCode(frame, 1,4)){
-                std::cout << frame.getCallSign() << std::endl;
+            if (Filter::filterByTypeCode(frame, 1,4) && !frame.getCallSign().empty()){
+                //std::cout << frame.getCallSign() << std::endl;
+                decoder.hexToDecimal(frame.getCallSign());
+                decoder.printDecValues();
             }
 
         }

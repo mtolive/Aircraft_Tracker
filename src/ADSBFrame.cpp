@@ -10,7 +10,7 @@ ADSBFrame::ADSBFrame(const std::vector<uint8_t>& buffer) {
 
             // Extract callsign
             if (df == 17) {
-                if (tc >= 4 && tc <= 7) {
+                if (tc >= 1 && tc <= 4) {
                     extractCallSign();
                 }
             }
@@ -28,7 +28,7 @@ void ADSBFrame::extractCallSign() {
     uint8_t mask = 0xFF; // 0b11111111
 
     // Loop through bytes 5 to 10 (inclusive)
-    for (int i = 5; i < 11; ++i) {
+    for (size_t i = 5; i < 11; ++i) {
         // Create a hex string for the current byte
         std::ostringstream hexStream;
         hexStream << std::hex << std::uppercase << std::setw(2) 
@@ -37,11 +37,10 @@ void ADSBFrame::extractCallSign() {
         // Append the hex value to hexValue string
         hexValue += hexStream.str();
     }
+    callsign = hexValue;
     // Print the accumulated hex value
     std::cout << "Hex Value: " << hexValue << std::endl;
 }
-
-
 
     std::string ADSBFrame::getCallSign() const {
         return callsign;
@@ -74,13 +73,13 @@ void ADSBFrame::extractCallSign() {
 
     // right shift i to least significant bit mask using 1.
     void ADSBFrame::print_bits(uint8_t byte) const {
-        for(int i = 7; i >= 0; i--){
+        for(size_t i = 7; i >= 0; i--){
         std::cout << ((byte >> i) & 1);
         }
     }
     // print binary
     void ADSBFrame::print_binary(const std::vector<uint8_t>& buffer, int len) const{   
-        for(int i = 0; i < len; i++){
+        for(size_t i = 0; i < len; i++){
         print_bits(buffer[i]); // pass in each byte
         std::cout << " ";
         }
