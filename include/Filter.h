@@ -1,22 +1,31 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#include "../include/ADSBFrame.h"
+#include "../include/Decoder.h"
 
 class Filter {
+private:
+    Decoder& decoder;
+     // Extract Bits from range
+    std::vector<uint8_t> extractBits(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit);
+
 public:
-    // Filter for a specific Downlink Format (DF)
-    static bool filterByDownlinkFormat(const ADSBFrame& frame, uint8_t expectedDf);
+    // Constructors
+    Filter(Decoder& decoder) : decoder(decoder) {}
 
-    // Filter for a specific Type Code (TC)
-    static bool filterByTypeCode(const ADSBFrame& frame, uint8_t expectedTc);
+    // Extract Downlink Format (DF)
+    uint8_t extractDownlinkFormat(const std::vector<uint8_t>& message);
+    // Extract Type Code (TC)
+    uint8_t extractTypeCode(const std::vector<uint8_t>& message);
+    // Extract ICAO 
+    std::string extractIcao(const std::vector<uint8_t>& message);
+    // Extract Callsign
+    std::string decodeCallSign(const std::vector<uint8_t>& message);
+    
+    // practice delete later
+    std::vector<uint8_t> Filter::extractBits2(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit);
 
-    // Filter for a specific Type Code Range (TC)
-    static bool filterByTypeCode(const ADSBFrame& frame, uint8_t minTc, uint8_t maxTc);
-
-    // Filter by Callsign
-    static bool filterByCallSign(const ADSBFrame& frame, const std::string& expectedCs);
-
+   
 };
 
 #endif // FILTER_H

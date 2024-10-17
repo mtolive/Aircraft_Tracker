@@ -1,9 +1,11 @@
-/*#include <iostream>
+#include <iostream>
 #include <vector>
 #include <csignal>
 #include <unistd.h>
 #include <iomanip>  // for hex formatting
 #include <cstdint>
+#include <rtl-sdr.h>
+
 
 #define BUFFER_SIZE 16384  // 16KB
 #define FRAME_SIZE 14 // ADS-B frame size is 14 bytes
@@ -50,7 +52,7 @@ void analyze(const std::vector<uint8_t>& buffer, int len){
    // extract type code (TC) from byte 5
    uint8_t tc = (buffer[4] >> 3) & 0x1F; // bits 33-37    
 
-   if(df == 17){
+   if(df == 17 && tc == 4){
       print_hex(buffer, FRAME_SIZE);
    }
 }
@@ -70,6 +72,8 @@ void capture_single_frame(std::vector<uint8_t>& buffer, int len){
 int main(){
    std::vector<uint8_t> buffer(BUFFER_SIZE);
    ssize_t len;
+   rtlsdr_dev_t* dev = nullptr;  // RTL-SDR device pointer
+
 
    // Setup signal handler for SIGINT (Ctrl+C)
    std::signal(SIGINT, handle_sigint);
@@ -85,4 +89,3 @@ int main(){
 
    return EXIT_SUCCESS;
 }
-*/

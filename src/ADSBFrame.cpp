@@ -2,87 +2,140 @@
 
 const size_t ADSBFrame::FRAME_SIZE = 14;
 
-ADSBFrame::ADSBFrame(const std::vector<uint8_t>& buffer) {
-        if (buffer.size() >= getFrameSize()) {
-            rawData = buffer;
-            df = (buffer[0] >> 3) & 0x1F;  // Extract DF
-            tc = (buffer[4] >> 3) & 0x1F;  // Extract TC
+void ADSBFrame::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
+    if (buffer.size() >= getFrameSize()) {
+        setBuffer(buffer);
+        df = filter.extractDownlinkFormat(buffer); // Use Filter to extract DF
+        tc = filter.extractTypeCode(buffer);        // Use Filter to extract TC
+        icao = filter.extractIcao(buffer);
+        std::cout << "df = " << static_cast<int>(df) << std::endl;
+        std::cout << "tc = " << static_cast<int>(tc) << std::endl;
+        std::cout << "icao = " << icao << std::endl;
 
-            // Extract callsign
-            if (df == 17) {
-                if (tc >= 1 && tc <= 4) {
-                    extractCallSign();
-                }
-            }
-        } else {
-            throw std::invalid_argument("Invalid frame size");
+        if (filterByDownlinkFormat(17) && filterByTypeCode(1,4)) {
+            callsign = filter.decodeCallSign(buffer); // Extract callsign using its own method
         }
+    } else {
+        throw std::invalid_argument("Invalid frame size");
     }
-
-// Reminder: bit number is 1 greater than the index. 
-void ADSBFrame::extractCallSign() {
-    callsign.clear();
-    hexValue.clear();  // Clear hexValue at the beginning
-
-    // Mask to extract bits 0-7
-    uint8_t mask = 0xFF; // 0b11111111
-
-    // Loop through bytes 5 to 10 (inclusive)
-    for (size_t i = 5; i < 11; ++i) {
-        // Create a hex string for the current byte
-        std::ostringstream hexStream;
-        hexStream << std::hex << std::uppercase << std::setw(2) 
-                  << std::setfill('0') << (rawData[i] & mask);
-        
-        // Append the hex value to hexValue string
-        hexValue += hexStream.str();
-    }
-    callsign = hexValue;
-    // Print the accumulated hex value
-    std::cout << "Hex Value: " << hexValue << std::endl;
 }
 
-    std::string ADSBFrame::getCallSign() const {
-        return callsign;
-    }
+/*Filter functions*/
 
-    uint8_t ADSBFrame::getDownlinkFormat() const {
-        return df;
-    }
+// Filter for a specific Downlink Format (DF)
+bool ADSBFrame::filterByDownlinkFormat(uint8_t expectedDf) {
+    return getDownlinkFormat() == expectedDf;
+}
 
-    size_t ADSBFrame::getFrameSize() const {
-        return FRAME_SIZE;
-    }
+// Filter for a specific Type Code (TC)
+bool ADSBFrame::filterByTypeCode(uint8_t expectedTc) {
+    return getTypeCode() == expectedTc;
+}
 
-    uint8_t ADSBFrame::getTypeCode() const {
-        return tc;
-    }
+// Filter for a specific Type Code (TC) within a range
+bool ADSBFrame::filterByTypeCode(uint8_t minTc, uint8_t maxTc) {
+    uint8_t tc = getTypeCode();
+    return (tc >= minTc && tc <= maxTc); // Check if TC is within the range
+}
 
-    void ADSBFrame::printHex() const {
-        for (size_t i = 0; i < rawData.size(); i++) {
-            std::cout << std::hex << std::uppercase << std::setw(2) 
-                      << std::setfill('0') << static_cast<int>(rawData[i]);
-        
-            // Print new line after every 14 bytes
-            if ((i + 1) % 14 == 0) {
-                std::cout << std::endl; // Print a new line after every 14 bytes
-            }
+// Filter for a specific ICAO address (ICAO)
+bool ADSBFrame::filterByIcao(const std::string& expectedIcao){
+    const std::string& icao = getIcao(); // Get the icao
+    return icao.find(expectedIcao) != std::string::npos; // Check if expectedCs is part of ICAO   
+}
+
+// Filter by CallSign
+bool ADSBFrame::filterByCallSign(const std::string& expectedCs) {
+    const std::string& callsign = getCallSign(); // Get the callsign from the frame
+    return callsign.find(expectedCs) != std::string::npos; // Check if expectedCs is part of callsign
+}
+
+
+/**** Setter Functions ****/
+void ADSBFrame::setBuffer(const std::vector<uint8_t>& buffer) {
+    rawData = buffer; // Access the rawData member variable
+}
+
+void ADSBFrame::setDownlinkFormat(uint8_t df) {
+    this->df = df; // 'this' is valid here in a non-static member function
+}
+
+void ADSBFrame::setTypeCode(uint8_t tc) {
+    this->tc = tc; // 'this' is valid here
+}
+
+void ADSBFrame::setIcao(std::string icao) {
+    this->icao = std::move(icao); // 'this' is valid here
+}
+
+void ADSBFrame::setCallsign(std::string callsign) {
+    this->callsign = std::move(callsign); // 'this' is valid here
+}
+
+
+
+/**** Getter Functions ****/
+uint8_t ADSBFrame::getDownlinkFormat() const {
+    return df;
+}
+
+uint8_t ADSBFrame::getTypeCode() const {
+    return tc;
+}
+
+std::string ADSBFrame::getIcao() const {
+    return icao;
+}
+
+std::string ADSBFrame::getCallSign() const {
+    return callsign;
+}
+
+size_t ADSBFrame::getFrameSize() const {
+    return FRAME_SIZE;
+}
+
+/**** Print Functions ****/
+
+void ADSBFrame::printHex() const {
+    for (size_t i = 0; i < rawData.size(); i++) {
+        std::cout << std::hex << std::uppercase << std::setw(2) 
+                  << std::setfill('0') << static_cast<int>(rawData[i]);
+
+        // Print new line after every 14 bytes
+        if ((i + 1) % 14 == 0) {
+            std::cout << std::endl; // Print a new line after every 14 bytes
         }
     }
+    if (rawData.size() % 14 != 0) {
+        std::cout << std::endl; // Final newline if needed
+    }
+}
 
-
-    // right shift i to least significant bit mask using 1.
-    void ADSBFrame::print_bits(uint8_t byte) const {
-        for(size_t i = 7; i >= 0; i--){
+void ADSBFrame::print_bits(uint8_t byte) const {
+    for (size_t i = 7; i < 8; i--) {
         std::cout << ((byte >> i) & 1);
+    }
+}
+
+void ADSBFrame::print_binary(const std::vector<uint8_t>& buffer, int len) const {
+    for (size_t i = 0; i < len; i++) {
+        print_bits(buffer[i]); // Pass in each byte
+        std::cout << " ";
+    }
+    std::cout << std::endl;
+}
+
+void ADSBFrame::print_hex(const std::vector<uint8_t>& buffer) {
+    for (int i = 0; i < buffer.size(); i++) {
+        std::cout << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(buffer[i]);
+
+        // Add a newline after every 14 bytes
+        if ((i + 1) % 14 == 0) {
+            std::cout << std::endl;
         }
     }
-    // print binary
-    void ADSBFrame::print_binary(const std::vector<uint8_t>& buffer, int len) const{   
-        for(size_t i = 0; i < len; i++){
-        print_bits(buffer[i]); // pass in each byte
-        std::cout << " ";
-        }
+    if (buffer.size() % 14 != 0) {
         std::cout << std::endl;
     }
-
+}

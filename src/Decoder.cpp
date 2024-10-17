@@ -1,76 +1,94 @@
 #include "../include/Decoder.h"
 
-void Decoder::initializeMap(){
-    asciiValues[1] = 'A'; asciiValues[2] = 'B'; asciiValues[3] = 'C'; asciiValues[4] = 'D'; asciiValues[5] = 'E';
-    asciiValues[6] = 'F'; asciiValues[7] = 'G'; asciiValues[8] = 'H'; asciiValues[9] = 'I'; asciiValues[10] = 'J';
-    asciiValues[11] = 'K'; asciiValues[12] = 'L'; asciiValues[13] = 'M'; asciiValues[14] = 'N'; asciiValues[15] = 'O';
-    asciiValues[16] = 'P'; asciiValues[17] = 'Q'; asciiValues[18] = 'R'; asciiValues[19] = 'S'; asciiValues[20] = 'T';
-    asciiValues[21] = 'U'; asciiValues[22] = 'V'; asciiValues[23] = 'W'; asciiValues[24] = 'X'; asciiValues[25] = 'Y';
-    asciiValues[26] = 'Z'; asciiValues[36] = '_'; asciiValues[48] = '0'; asciiValues[49] = '1'; asciiValues[50] = '2';
-    asciiValues[51] = '3'; asciiValues[52] = '4'; asciiValues[53] = '5'; asciiValues[54] = '6'; asciiValues[55] = '7';
-    asciiValues[56] = '8'; asciiValues[57] = '9';
+void Decoder::initializeMap() {
+    asciiValues = {
+        {1, 'A'}, {2, 'B'}, {3, 'C'}, {4, 'D'}, {5, 'E'}, {6, 'F'}, {7, 'G'}, {8, 'H'}, {9, 'I'}, {10, 'J'},
+        {11, 'K'}, {12, 'L'}, {13, 'M'}, {14, 'N'}, {15, 'O'}, {16, 'P'}, {17, 'Q'}, {18, 'R'}, {19, 'S'}, {20, 'T'},
+        {21, 'U'}, {22, 'V'}, {23, 'W'}, {24, 'X'}, {25, 'Y'}, {26, 'Z'}, {32, '_'}, {48, '0'}, {49, '1'}, {50, '2'},
+        {51, '3'}, {52, '4'}, {53, '5'}, {54, '6'}, {55, '7'}, {56, '8'}, {57, '9'}
+    };
 }
 
-const std::string& Decoder::hexToBinary(const std::string& hexValues){
-    binValues.clear();
+std::string Decoder::binaryToHex(const std::vector<uint8_t>& message) {
+    std::ostringstream str;
+    for (const auto& byte : message) {
+        str << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+    }
+    return str.str();
+}
 
+std::string Decoder::hexToBinary(const std::string& hexValues) {
     std::string binary;
     for (char c : hexValues) {
-        // Convert each hex digit to a 6-bit binary representation
         binary += std::bitset<4>(std::stoi(std::string(1, c), nullptr, 16)).to_string();
     }
-    binValues = binary;
-    return binValues;
+    return binary;
 }
 
-const std::vector<std::string>& Decoder::group6Binary(const std::string& binValues){
-    binValuesGroup6.clear();
-
-    size_t size = binValues.length();
-    for(size_t i = 0; i < size; i += 6){
-        std::string str = binValues.substr(i,6); // 6 bits at a time
-        binValuesGroup6.push_back(str);
+std::vector<std::string> Decoder::group6Binary(const std::string& binValues) {
+    std::vector<std::string> result;
+    for (size_t i = 0; i < binValues.length(); i += 6) {
+        result.push_back(binValues.substr(i, 6));
     }
-    return binValuesGroup6;
+    return result;
 }
 
-const std::vector<std::string>& Decoder::binaryToDecimal(const std::vector<std::string>& binValuesGroup6){
-    decValues.clear();
-
-    size_t len = binValues.size();
-     for(auto bin : binValuesGroup6){
-
-        std::string str = std::to_string(std::stoul(bin, nullptr, 2));
-        decValues.push_back(str);
+std::vector<std::string> Decoder::group6Binary(const std::vector<uint8_t>& binary) {
+    std::string binaryString;
+    for (const auto& byte : binary) {
+        binaryString += std::bitset<8>(byte).to_string();
     }
-    return decValues;
+    return group6Binary(binaryString);  // Reuse the other group6Binary method
 }
 
-void Decoder::hexToDecimal(const std::string& hexValues){
-    // const auto& to assign return value
-    hexToBinary(hexValues);            // convert hex string to pure binary
-    group6Binary(binValues);           // convert binary into groups of 6 instead of 4
-    binaryToDecimal(binValuesGroup6);  // evaluate the binary in groups of 6.
-                                       // now class vector decValues will have all dec values.
+std::vector<std::string> Decoder::binaryToDecimal(const std::vector<std::string>& binValuesGroup6) {
+    std::vector<std::string> decimalValues;
+    for (const auto& bin : binValuesGroup6) {
+        decimalValues.push_back(std::to_string(std::stoul(bin, nullptr, 2)));
+    }
+    return decimalValues;
 }
 
-    const std::string& Decoder::decimalToAlpha(const std::vector<std::string>& decValues){
-        callSign.clear();
-
-        for (const auto& dec : decValues) {
+std::string Decoder::decimalToAlpha(const std::vector<std::string>& decValues) {
+    std::string result;
+    for (const auto& dec : decValues) {
         int key = std::stoi(dec);
-
-            if (asciiValues.find(key) != asciiValues.end()) {  // Check if key exists in the map
-                callSign += asciiValues[key];
-            } else {
-                callSign += '?';  // Missing key
-            }
-        }
-        return callSign;
+        result += asciiValues.count(key) ? asciiValues[key] : '\0';
     }
+    return result;
+}
 
-void Decoder::printDecValues() const{
-    for(auto str : decValues)
+std::string Decoder::binToAlpha(const std::vector<uint8_t>& binary) {
+    auto binGroups = group6Binary(binary);
+    auto decValues = binaryToDecimal(binGroups);
+    return decimalToAlpha(decValues);
+}
+
+std::string Decoder::hexToAlpha(const std::string& hexValues) {
+    auto binary = hexToBinary(hexValues);
+    auto binGroups = group6Binary(binary);
+    auto decValues = binaryToDecimal(binGroups);
+    return decimalToAlpha(decValues);
+}
+
+const std::string& Decoder::getCallSign() const {
+    return callSign;
+}
+
+void Decoder::printDecValues(const std::vector<std::string>& decValues) const {
+    for (const auto& str : decValues) {
         std::cout << str << " ";
+    }
+    std::cout << std::endl;
+}
+
+void Decoder::printCallSign() const {
+    std::cout << getCallSign() << std::endl;
+}
+
+void Decoder::printGroup6(const std::vector<std::string>& binValuesGroup6) const {
+    for (const auto& str : binValuesGroup6) {
+        std::cout << str << " ";
+    }
     std::cout << std::endl;
 }
