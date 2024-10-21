@@ -20,7 +20,7 @@ private:
 
 public:
 
- // Constructor that only initializes the filter
+ // Constructor injects filter instance
     ADSBFrame(Filter& filterInstance)
         : filter(filterInstance), df(0), tc(0) {}
 

@@ -2,7 +2,8 @@
     // Will decode callsigns
     // Filter for a specific Downlink Format (DF)
 
-    
+    // extract ac type
+
     std::string Filter::decodeCallSign(const std::vector<uint8_t>& message) {
         auto callsignBits = extractBits(message, 41, 88);
         std::string callsign = decoder.binToAlpha(callsignBits);
