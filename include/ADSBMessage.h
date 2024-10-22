@@ -1,33 +1,41 @@
-#ifndef ADSBFRAME_H
-#define ADSBFRAME_H
+#ifndef ADSBMESSAGE_H
+#define ADSBMESSAGE_H
 
 #include <vector>
 #include <iostream>
 #include <cstdint>
 #include <iomanip>
-#include "../include/Filter.h"
+#include <unordered_map> // for std::unordered_map
+#include <unordered_set>
+#include <set> // for std::set
+#include "../include/Decoder.h"
 
-class ADSBFrame {
+class ADSBMessage {
 private:
-    uint8_t df;  // Downlink format
-    uint8_t tc;  // Type code
-    std::string callsign; // call sign
-    std::string hexValue;
-    std::string icao;
-    std::vector<uint8_t> rawData;
-    static const size_t FRAME_SIZE;
-    Filter& filter;
+    Decoder& decoder;
 
+    struct ADSBData {
+    uint8_t df;        // Downlink format
+    uint8_t tc;        // Type code
+    uint8_t oddEven;   // Odd/Even flag for velocity decoding
+    std::string icao;  // ICAO address
+    std::string callsign; // Call sign
+};
+    ADSBData data;  // The struct instance for message-specific data
+    std::vector<uint8_t> rawData;
+    std::unordered_map<std::string, ADSBData> icaoData;
+    std::unordered_set<std::string> storedIcaos;
+    static const size_t FRAME_SIZE;
 public:
 
- // Constructor injects filter instance
-    ADSBFrame(Filter& filterInstance)
-        : filter(filterInstance), df(0), tc(0) {}
+ // Constructor injects Decoder instance
+    ADSBMessage(Decoder& decoderInstance)
+        : decoder(decoderInstance) {}
 
     // Method to initialize frame data from buffer
     void initializeFromBuffer(const std::vector<uint8_t>& buffer);
 
-
+    
 
     bool filterByDownlinkFormat(uint8_t expectedDf);
     bool filterByTypeCode(uint8_t expectedTc);
@@ -46,7 +54,6 @@ public:
     std::string getIcao() const;
     std::string getCallSign() const;
     size_t getFrameSize() const;
-
 
     void printHex() const;
     void print_bits(uint8_t byte) const;

@@ -1,94 +1,149 @@
 #include "../include/Decoder.h"
+#include <bitset>
+    // Will decode callsigns
+    // Decoder for a specific Downlink Format (DF)
 
-void Decoder::initializeMap() {
-    asciiValues = {
-        {1, 'A'}, {2, 'B'}, {3, 'C'}, {4, 'D'}, {5, 'E'}, {6, 'F'}, {7, 'G'}, {8, 'H'}, {9, 'I'}, {10, 'J'},
-        {11, 'K'}, {12, 'L'}, {13, 'M'}, {14, 'N'}, {15, 'O'}, {16, 'P'}, {17, 'Q'}, {18, 'R'}, {19, 'S'}, {20, 'T'},
-        {21, 'U'}, {22, 'V'}, {23, 'W'}, {24, 'X'}, {25, 'Y'}, {26, 'Z'}, {32, '_'}, {48, '0'}, {49, '1'}, {50, '2'},
-        {51, '3'}, {52, '4'}, {53, '5'}, {54, '6'}, {55, '7'}, {56, '8'}, {57, '9'}
-    };
+    // extract ac type
+
+std::string Decoder::decodeCallSign(const std::vector<uint8_t>& message) {
+    auto callsignBits = extractBits(message, 41, 88);
+    std::string callsign = converter.binToAlpha(callsignBits);
+    return callsign;
+}
+  
+std::string Decoder::decodeIcao(const std::vector<uint8_t>& message) {
+    auto icaoBits = extractBits(message, 9, 32);
+   /* for (auto bit : icaoBits) {
+        std::cout << std::bitset<8>(bit) << " "; // Display bits in binary for verification
+    } */
+    std::string icao = converter.binaryToHex(icaoBits);
+    return icao;
 }
 
-std::string Decoder::binaryToHex(const std::vector<uint8_t>& message) {
-    std::ostringstream str;
-    for (const auto& byte : message) {
-        str << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+
+uint8_t Decoder::decodeDownlinkFormat(const std::vector<uint8_t>& message) {
+ 
+    auto dfVector = extractBits(message, 1, 5);  // Extract Downlink Format
+    uint8_t df = dfVector[0];
+    
+    return df;
+}
+
+uint8_t Decoder::decodeTypeCode(const std::vector<uint8_t>& message){
+    
+    auto tcVector = extractBits(message, 33, 37);
+    uint8_t tc = tcVector[0];
+        //std::cout << "tc = " << static_cast<int>(tc) << std::endl; // Cast to int for proper output
+    return tc;
+}
+
+uint8_t Decoder::decodeOddEven(const std::vector<uint8_t>& message){
+
+    auto oeVector = extractBits(message, 54, 54);
+    uint8_t oddEven = oeVector[0];
+    return oddEven;
+}
+
+std::string Decoder::decodePosition(const std::vector<uint8_t>& message){
+
+    std::string position = "";
+    return position;
+}
+
+
+// Private functions
+
+std::vector<uint8_t> Decoder::extractBits(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit) {
+    // Adjust inputs to match 0-based indexing
+    lowBit -= 1;  // Subtract 1 to account for 1-based indexing
+    highBit -= 1; // Subtract 1 for consistency
+    
+    size_t numBits = highBit - lowBit + 1;
+    size_t numBytes = (numBits + 7) / 8;
+    size_t startingBit = lowBit;
+    std::vector<uint8_t> extractedBits(numBytes, 0);
+
+    for (; lowBit <= highBit; ++lowBit) {
+        size_t messageIndex = lowBit / 8;
+        size_t messageBitIndex = lowBit % 8;
+        uint8_t extractedBit = (message[messageIndex] >> (7 - messageBitIndex)) & 0x1;
+
+        size_t extractedIndex = (lowBit - startingBit) / 8;
+        size_t extractedBitIndex = (lowBit - startingBit) % 8;
+
+        // Place the bit in the correct position of extractedBits
+        extractedBits[extractedIndex] |= (extractedBit << (7 - extractedBitIndex));
     }
-    return str.str();
-}
 
-std::string Decoder::hexToBinary(const std::string& hexValues) {
-    std::string binary;
-    for (char c : hexValues) {
-        binary += std::bitset<4>(std::stoi(std::string(1, c), nullptr, 16)).to_string();
+    // Adjust the first byte if less than 8 bits were extracted
+    if (numBits < 8) {
+        extractedBits[0] >>= (8 - numBits); // Right shift to remove unnecessary bits
     }
-    return binary;
+
+    return extractedBits;
 }
 
-std::vector<std::string> Decoder::group6Binary(const std::string& binValues) {
-    std::vector<std::string> result;
-    for (size_t i = 0; i < binValues.length(); i += 6) {
-        result.push_back(binValues.substr(i, 6));
+
+std::vector<uint8_t> Decoder::extractBits2(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit){
+
+    // offset
+    lowBit -= 1;
+    highBit -= 1;
+    const size_t lowBitValue = lowBit;
+    const size_t size = message.size();
+    std::vector<uint8_t> extractedBits;
+
+    for(size_t i = 0; i < size; ++i){
+
+        size_t messageIndex = lowBit / 8;    // index of extractedbit within the message
+        size_t messageBitIndex = lowBit % 8; // index of the extracted bit within message[messageIndex]
+
+        // extract the bit
+        uint8_t extractedBit = (message[messageIndex] >> (7 - lowBit)) & 0x1;
+        // determine index of eb vector as well as bit placement
+        size_t extractedIndex = (lowBit - lowBitValue) / 8;
+        size_t extractedBitIndex = (lowBit - lowBitValue) % 8;
+        
+        extractedBits[extractedIndex] |= (extractedBit << 7 - lowBit);
+
     }
-    return result;
+        return extractedBits;
 }
+    
 
-std::vector<std::string> Decoder::group6Binary(const std::vector<uint8_t>& binary) {
-    std::string binaryString;
-    for (const auto& byte : binary) {
-        binaryString += std::bitset<8>(byte).to_string();
-    }
-    return group6Binary(binaryString);  // Reuse the other group6Binary method
-}
 
-std::vector<std::string> Decoder::binaryToDecimal(const std::vector<std::string>& binValuesGroup6) {
-    std::vector<std::string> decimalValues;
-    for (const auto& bin : binValuesGroup6) {
-        decimalValues.push_back(std::to_string(std::stoul(bin, nullptr, 2)));
-    }
-    return decimalValues;
-}
+   
 
-std::string Decoder::decimalToAlpha(const std::vector<std::string>& decValues) {
-    std::string result;
-    for (const auto& dec : decValues) {
-        int key = std::stoi(dec);
-        result += asciiValues.count(key) ? asciiValues[key] : '\0';
-    }
-    return result;
-}
+    
 
-std::string Decoder::binToAlpha(const std::vector<uint8_t>& binary) {
-    auto binGroups = group6Binary(binary);
-    auto decValues = binaryToDecimal(binGroups);
-    return decimalToAlpha(decValues);
-}
+    
+    /*
+    
+    // extract downlink format (DF) from the first byte
+   uint8_t df = (buffer[0] >> 3) & 0x1F; // first 5 bits
 
-std::string Decoder::hexToAlpha(const std::string& hexValues) {
-    auto binary = hexToBinary(hexValues);
-    auto binGroups = group6Binary(binary);
-    auto decValues = binaryToDecimal(binGroups);
-    return decimalToAlpha(decValues);
-}
+   a function that returns an uint8_t, (takes in range -- can be 1-1 or 22-22 etc, const std::vector<uint8_t>& buffer)
+        size_t buffer.size();
+        lv = 22 // low value
+        hv = 31 // high value
+        8
+        lv = 22  // low value
+        // determine buffer index low value
+        low_buffer = (lv / 8)  // 2
+        // determine shift
+        low_shift = (lv % 8)       // 6
 
-const std::string& Decoder::getCallSign() const {
-    return callSign;
-}
+        // determine buffer index high value
+        high_buffer = (hv / 8)  // 3
+        // determine shift
+        high_shift = (hv % 8)   //  7
 
-void Decoder::printDecValues(const std::vector<std::string>& decValues) const {
-    for (const auto& str : decValues) {
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
-}
 
-void Decoder::printCallSign() const {
-    std::cout << getCallSign() << std::endl;
-}
 
-void Decoder::printGroup6(const std::vector<std::string>& binValuesGroup6) const {
-    for (const auto& str : binValuesGroup6) {
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
-}
+        00000000 0
+        00000000 1
+        00000000 2
+        00000000 3
+    
+    */
+

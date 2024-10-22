@@ -1,20 +1,24 @@
 #include "../include/Analyzer.h"
 
 void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
-    frame.initializeFromBuffer(buffer);
+    message.initializeFromBuffer(buffer);
 
-    std::cout << "Byte vector: ";
+    /*std::cout << "Byte vector: ";
     for (uint8_t byte : buffer) {
         std::cout << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
     }
-    std::cout << std::dec << std::endl; // Switch back to decimal output
+    std::cout << std::dec << std::endl; // Switch back to decimal output*/
 
-    if (frame.filterByDownlinkFormat(17)) {
+/*    if (message.filterByDownlinkFormat(17)) {
         // Only print if it matches the DF filter
-        if (frame.filterByTypeCode(1,4) && !frame.getCallSign().empty()) {
-            std::cout << frame.getCallSign() << std::endl; // Output callsign
+        if (message.filterByTypeCode(1,4) && !message.getCallSign().empty()) {
+            for (uint8_t byte : buffer) {
+                std::cout << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+            }
+            std::cout << std::dec << std::endl; // Switch back to decimal output*
+            std::cout << message.getCallSign() << std::endl; // Output callsign
         }
-    }
+    }*/
 }
 
 std::vector<uint8_t> Analyzer::hexStringToVector(std::string hexString){

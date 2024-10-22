@@ -1,45 +1,34 @@
 #ifndef DECODER_H
 #define DECODER_H
 
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <iomanip>
-#include <stdexcept>
-#include <bitset>
-#include <unordered_map>
-#include <optional>
+#include "../include/DataConverter.h"
 
 class Decoder {
-
 private:
-    std::unordered_map<int, char> asciiValues;
-    std::string callSign;
+    DataConverter& converter;
+     // decode Bits from range
+    std::vector<uint8_t> extractBits(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit);
 
 public:
-    Decoder() {
-        initializeMap();
-    };
+    // Constructors
+    Decoder(DataConverter& converter) : converter(converter) {}
 
-    void initializeMap();
-    
-    std::string binaryToHex(const std::vector<uint8_t>& message);
-    std::string hexToBinary(const std::string& hexValue);
+    // Decode Downlink Format (DF)
+    uint8_t decodeDownlinkFormat(const std::vector<uint8_t>& message);
+    // Decode Type Code (TC)
+    uint8_t decodeTypeCode(const std::vector<uint8_t>& message);
+    // Decode ICAO 
+    std::string decodeIcao(const std::vector<uint8_t>& message);
+    // Decode Callsign
+    std::string decodeCallSign(const std::vector<uint8_t>& message);
+    // Decode odd / even
+    uint8_t decodeOddEven(const std::vector<uint8_t>& message);
+    // Decode Lat/Lon
+    std::string decodePosition(const std::vector<uint8_t>& message);
+    // practice delete later
+    std::vector<uint8_t> extractBits2(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit);
 
-    std::vector<std::string> group6Binary(const std::string& binValues);
-    std::vector<std::string> group6Binary(const std::vector<uint8_t>& binary);
-
-    std::vector<std::string> binaryToDecimal(const std::vector<std::string>& binValuesGroup6);
-    std::string decimalToAlpha(const std::vector<std::string>& decValues);
-
-    std::string binToAlpha(const std::vector<uint8_t>& binary);
-    std::string hexToAlpha(const std::string& hexValues);
-
-    const std::string& getCallSign() const;
-
-    void printDecValues(const std::vector<std::string>& decValues) const;
-    void printCallSign() const;
-    void printGroup6(const std::vector<std::string>& binValuesGroup6) const;
+   
 };
 
-#endif
+#endif // Decoder_H

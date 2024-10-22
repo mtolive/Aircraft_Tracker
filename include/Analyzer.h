@@ -1,15 +1,15 @@
 #ifndef ANALYZER_H
 #define ANALYZER_H
 
-#include "ADSBFrame.h"
+#include "ADSBMessage.h"
 #include <iostream> 
 
 class Analyzer {
 private:
-    ADSBFrame& frame;  // Reference to ADSBFrame
+    ADSBMessage& message;  // Reference to ADSBFrame
 
 public:
-    Analyzer(ADSBFrame& frameInstance) : frame(frameInstance) {}
+    Analyzer(ADSBMessage& messageInstance) : message(messageInstance) {}
 
     void analyze(const std::vector<uint8_t>& buffer); // Declaration only
     std::vector<uint8_t> hexStringToVector(std::string hexString);
