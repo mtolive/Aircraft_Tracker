@@ -2,8 +2,10 @@
 #define DECODER_H
 
 #include "../include/DataConverter.h"
+#include <tuple>
 
 class Decoder {
+
 private:
     DataConverter& converter;
      // decode Bits from range
@@ -24,11 +26,7 @@ public:
     // Decode odd / even
     uint8_t decodeOddEven(const std::vector<uint8_t>& message);
     // Decode Lat/Lon
-    std::string decodePosition(const std::vector<uint8_t>& message);
-    // practice delete later
-    std::vector<uint8_t> extractBits2(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit);
-
-   
+    std::tuple<long, long> decodePosition(const std::tuple<std::vector<uint8_t>&, std::vector<uint8_t>&>);
 };
 
 #endif // Decoder_H

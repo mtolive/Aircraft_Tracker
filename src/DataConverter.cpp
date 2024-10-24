@@ -33,10 +33,17 @@ std::vector<std::string> DataConverter::binaryToDecimal(const std::vector<std::s
     return decimalValues;
 }
 
+int DataConverter::hexToDecimal(const std::vector<uint8_t>& message){
+    int decimalValue = 0;
+    for(auto byte : message){
+        decimalValue = (decimalValue << 8) | byte;
+    }
+    return decimalValue;
+}
+
 /***************************************************************************
 *********************** Conversions For Callsign ***************************
 ***************************************************************************/
-
 std::vector<std::string> DataConverter::group6Binary(const std::string& binValues) {
     std::vector<std::string> result;
     for (size_t i = 0; i < binValues.length(); i += 6) {
@@ -77,26 +84,4 @@ std::string DataConverter::hexToAlpha(const std::string& hexValues) {
 
 const std::string& DataConverter::getCallSign() const {
     return callSign;
-}
-
-/***************************************************************************
-**************************** Print Functions *******************************
-***************************************************************************/
-
-void DataConverter::printDecValues(const std::vector<std::string>& decValues) const {
-    for (const auto& str : decValues) {
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
-}
-
-void DataConverter::printCallSign() const {
-    std::cout << getCallSign() << std::endl;
-}
-
-void DataConverter::printGroup6(const std::vector<std::string>& binValuesGroup6) const {
-    for (const auto& str : binValuesGroup6) {
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
 }
