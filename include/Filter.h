@@ -26,6 +26,7 @@ public:
     bool filterIdMsg(uint8_t df, uint8_t tc);
     bool filterOddMsg(uint8_t df, uint8_t tc, uint8_t oe);
     bool filterEvenMsg(uint8_t df, uint8_t tc, uint8_t oe);
+    bool filterPosMsg(uint8_t df, uint8_t tc);
     bool filterVelocityMsg(uint8_t df, uint8_t tc);
 
 

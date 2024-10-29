@@ -29,15 +29,15 @@ bool Filter::filterIdMsg(uint8_t df, uint8_t tc){
 }
 
 bool Filter::filterOddMsg(uint8_t df, uint8_t tc, uint8_t oe){
-    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 22)
+    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 18)
             && filterOddEven(oe, 1));
 }
 
 bool Filter::filterEvenMsg(uint8_t df, uint8_t tc, uint8_t oe){
-    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 22)
+    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 18)
             && filterOddEven(oe, 0));
 }
 
-bool Filter::filterVelocityMsg(uint8_t df, uint8_t tc){
-    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 22));
+bool Filter::filterPosMsg(uint8_t df, uint8_t tc){
+    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 18));
 }

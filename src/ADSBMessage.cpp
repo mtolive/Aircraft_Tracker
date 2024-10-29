@@ -18,9 +18,7 @@ void ADSBMessage::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
     }
 }
 
-
 /* Extraction Functions*/
-
 void ADSBMessage::extractIcao(const std::vector<uint8_t>& message){
     setIcao(decoder.decodeIcao(message));
 }

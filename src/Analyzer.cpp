@@ -1,33 +1,90 @@
 #include "../include/Analyzer.h"
 
 void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
-    message.initializeFromBuffer(buffer);
-    // set Data struct
-    setIcao(message.getIcao());
-    setMessage(message.getMessage());
-    // The plan: Create a Filter class and Filter here. ADSB will decode.
-    // upon initialization message will set icao / df / tc
-    if(filter.filterIdMsg(message.getDownlinkFormat(), message.getTypeCode())){                         // if is correct message type 
-        if(storedIcaos.find(message.getIcao()) == storedIcaos.end()){  // if icao is not known
-            message.extractCallsign(message.getMessage());
-            setCallsign(message.getCallsign());
-            storedIcaos[message.getIcao()].callsign = message.getCallsign();
-            
-            std::cout << "Initial msg ICAO (" << message.getIcao() << "), Callsign (" << message.getCallsign() << "): ";
-            print_hex(message.getMessage());
-            }  
-    }else if(filter.filterVelocityMsg(message.getDownlinkFormat(), message.getTypeCode())){
-        if(storedIcaos.find(message.getIcao()) != storedIcaos.end()){  // if icao is not known
-            message.extractOe(message.getMessage());
-            setOe(message.getOddEven());
-
-            std::cout << "Related message ICAO (" << message.getIcao() << "), Callsign (" 
-                 << storedIcaos[message.getIcao()].callsign << ") (" << "OE (" << static_cast<int>(getOe()) << ") : ";
-                print_hex(buffer);
-        }
+    message.initializeFromBuffer(buffer);    // init ADSB message
+    //nitData(message);                       // init data structure
+    // If it is ID message type, and is NOT known
+    if(filter.filterIdMsg(message.getDownlinkFormat(), message.getTypeCode())){
+        analyzeIdMsg(message);        
+    // Else if is velocity message type, and IS known
+    }else if(filter.filterPosMsg(message.getDownlinkFormat(), message.getTypeCode())){
+        // if message is Even '0', then store position message in map
+       analyzePosMsg(message);
     }
 }
 
+/* Initialize Data */
+Analyzer::Data Analyzer::initData(ADSBMessage& message){
+    Data data;
+    data.icao = message.getIcao();
+    data.message = message.getMessage();
+    data.timestamp = std::chrono::system_clock::now();
+    return data;
+}
+
+void Analyzer::initEvenMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
+    Data& evenData = std::get<0>(tuple);
+    evenData.oe = message.getOddEven(); // Ensure this reflects the message state
+    evenData.message = message.getMessage();
+    evenData.icao = message.getIcao();
+}
+
+void Analyzer::initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
+    Data& oddData = std::get<1>(tuple);
+    oddData.oe = message.getOddEven(); // Should be consistent with message state
+    oddData.message = message.getMessage();
+    oddData.icao = message.getIcao();
+}
+
+/* Analyze Message Function */
+const std::vector<uint8_t>& Analyzer::analyzeIdMsg(ADSBMessage& message){
+    if(storedIcaos.find(message.getIcao()) == storedIcaos.end()){  // if icao is not known
+        auto data = initData(message);
+        message.extractCallsign(message.getMessage());
+        data.callsign = message.getCallsign();
+        storedIcaos[message.getIcao()] = data;
+    }
+    return message.getMessage();  
+}
+
+const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) { 
+    if (storedIcaos.find(message.getIcao()) != storedIcaos.end()) {
+        message.extractOe(message.getMessage()); // Ensure this is working as expected
+        if (!message.getOddEven()) { // If message is even
+            Data evenData = initData(message);
+            posMessages[message.getIcao()] = std::make_tuple(evenData, Data{}); // Default odd data
+            initEvenMsg(message, posMessages[message.getIcao()]);               
+        } else { // If message is odd
+            auto& [evenData, oddData] = posMessages[message.getIcao()];
+            // Only process if evenData has been initialized
+            if (evenData.icao == message.getIcao()) { 
+                initOddMsg(message, posMessages[message.getIcao()]);
+                std::cout << "Even Data - OE: " << static_cast<int>(evenData.oe)
+                          << ", ICAO: " << evenData.icao << ", CS: " << storedIcaos[message.getIcao()].callsign 
+                          << " , Message: ";
+                print_hex(evenData.message);
+                
+                std::cout << "Odd Data - OE: " << static_cast<int>(oddData.oe)
+                          << ", ICAO: " << oddData.icao<< ", CS: " << storedIcaos[message.getIcao()].callsign
+                           << " , Message: ";
+                print_hex(oddData.message);
+                posMessages.erase(message.getIcao());            
+            } 
+        }
+    }
+    return message.getMessage(); // Consider changing this to void if not necessary
+}
+
+const std::vector<uint8_t>& Analyzer::analyzeVelMsg(ADSBMessage& message){
+    return message.getMessage();
+}
+
+double Analyzer::timeDifferenceInSeconds(const Data& data1, const Data& data2) {
+    auto duration = data2.timestamp - data1.timestamp;
+    return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+}
+
+/* Public: */
 /* Format Functions */
 std::vector<uint8_t> Analyzer::hexStringToVector(std::string hexString){
     size_t length = hexString.length();
@@ -79,38 +136,4 @@ void Analyzer::print_hex(const std::vector<uint8_t>& buffer) const {
         std::setfill('0') << static_cast<int>(buffer[i]);
     }
     std::cout << std::endl;
-}
-
-/* Set Functions */
-void Analyzer::setIcao(const std::string& icao){
-    data.icao = icao;
-}
-
-void Analyzer::setMessage(const std::vector<uint8_t>& message){
-    data.message = message;
-}
-
-void Analyzer::setCallsign(const std::string& callsign){
-    data.callsign = callsign;
-}
-    
-void Analyzer::setOe(const uint8_t oe){
-    data.oe = oe;
-}
-
-/* Get Functions */
-const std::string& Analyzer::getIcao() const{
-    return data.icao;
-}
-
-const std::vector<uint8_t>& Analyzer::getMessage() const{
-    return data.message;
-}
-
-const std::string& Analyzer::getCallsign() const{
-    return data.callsign;
-}
-
-const uint8_t Analyzer::getOe() const{
-    return data.oe;
 }

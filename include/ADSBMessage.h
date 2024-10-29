@@ -13,9 +13,7 @@
 #include "../include/Decoder.h"
 
 class ADSBMessage {
-
 private:
-
     Decoder& decoder;
     std::vector<uint8_t> message; // 14-byte ADSB message   
     uint8_t df;        // Downlink format
@@ -29,7 +27,6 @@ public:
  // Constructor injects Decoder instance
     ADSBMessage(Decoder& decoderInstance)
         : decoder(decoderInstance) {}
-    
     /* Initialize DF/TC/ICAO */
     void initializeFromBuffer(const std::vector<uint8_t>& buffer);
     

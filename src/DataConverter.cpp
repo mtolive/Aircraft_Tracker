@@ -17,7 +17,7 @@ std::string DataConverter::binaryToHex(const std::vector<uint8_t>& message) {
     return str.str();
 }
 
-std::string& DataConverter::hexToBinary(const std::string& hexValues) {
+std::string DataConverter::hexToBinary(const std::string& hexValues) {
     std::string binary;
     for (char c : hexValues) {
         binary += std::bitset<4>(std::stoi(std::string(1, c), nullptr, 16)).to_string();
@@ -25,7 +25,7 @@ std::string& DataConverter::hexToBinary(const std::string& hexValues) {
     return binary;
 }
 
-std::vector<std::string>& DataConverter::binaryToDecimal(const std::vector<std::string>& binValues) {
+std::vector<std::string> DataConverter::binaryToDecimal(const std::vector<std::string>& binValues) {
     std::vector<std::string> decimalValues;
     for (const auto& bin : binValues) {
         decimalValues.push_back(std::to_string(std::stoul(bin, nullptr, 2)));
@@ -44,7 +44,7 @@ int DataConverter::hexToDecimal(const std::vector<uint8_t>& message){
 /***************************************************************************
 *********************** Conversions For Callsign ***************************
 ***************************************************************************/
-std::vector<std::string>& DataConverter::group6Binary(const std::string& binValues) {
+std::vector<std::string> DataConverter::group6Binary(const std::string& binValues) {
     std::vector<std::string> result;
     for (size_t i = 0; i < binValues.length(); i += 6) {
         result.push_back(binValues.substr(i, 6));
@@ -52,7 +52,7 @@ std::vector<std::string>& DataConverter::group6Binary(const std::string& binValu
     return result;
 }
 
-std::vector<std::string>& DataConverter::group6Binary(const std::vector<uint8_t>& binary) {
+std::vector<std::string> DataConverter::group6Binary(const std::vector<uint8_t>& binary) {
     std::string binaryString;
     for (const auto& byte : binary) {
         binaryString += std::bitset<8>(byte).to_string();
@@ -60,7 +60,7 @@ std::vector<std::string>& DataConverter::group6Binary(const std::vector<uint8_t>
     return group6Binary(binaryString);  // Reuse the other group6Binary method
 }
 
-std::string& DataConverter::decimalToAlpha(const std::vector<std::string>& decValues) {
+std::string DataConverter::decimalToAlpha(const std::vector<std::string>& decValues) {
     std::string result;
     for (const auto& dec : decValues) {
         int key = std::stoi(dec);
@@ -69,7 +69,7 @@ std::string& DataConverter::decimalToAlpha(const std::vector<std::string>& decVa
     return result;
 }
 
-std::string& DataConverter::binToAlpha(const std::vector<uint8_t>& binary) {
+std::string DataConverter::binToAlpha(const std::vector<uint8_t>& binary) {
     auto binGroups = group6Binary(binary);
     auto decValues = binaryToDecimal(binGroups);
     return decimalToAlpha(decValues);
