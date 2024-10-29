@@ -1,3 +1,10 @@
+# Files
+graveyard.txt
+pyMode.py
+
+# Directories
+/myenv/
+
 # Prerequisites
 *.d
 
@@ -30,3 +37,4 @@
 *.exe
 *.out
 *.app
+*

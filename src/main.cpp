@@ -20,11 +20,12 @@ void handle_sigint(int signum) {
 int main() {
     std::vector<uint8_t> buffer(BUFFER_SIZE);
     ssize_t len;
-
+    // create instances for injection
     DataConverter converter;
     Decoder decoder(converter); // Create an instance of Filter
-    ADSBMessage message(decoder);  
-    Analyzer analyzer(message); // Pass the filter instance to Analyzer
+    ADSBMessage message(decoder); 
+    Filter filter; 
+    Analyzer analyzer(message, filter); // Pass the filter instance to Analyzer
 
     // Setup signal handler for SIGINT (Ctrl+C)
     std::signal(SIGINT, handle_sigint);

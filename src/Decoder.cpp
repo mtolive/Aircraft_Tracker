@@ -34,9 +34,8 @@ uint8_t Decoder::decodeOddEven(const std::vector<uint8_t>& message){
 std::tuple<long, long> Decoder::decodePosition(const std::tuple<std::vector<uint8_t>&, std::vector<uint8_t>&>){
     std::tuple<long, long> location = std::make_tuple(0.0,0.0);
 
-    
+    return location;
 }
-
 
 // Private functions
 std::vector<uint8_t> Decoder::extractBits(const std::vector<uint8_t>& message, size_t lowBit, size_t highBit) {
@@ -68,41 +67,3 @@ std::vector<uint8_t> Decoder::extractBits(const std::vector<uint8_t>& message, s
     }
     return extractedBits;
 }
-    
-
-
-   
-
-    
-
-    
-    /*
-    
-    // extract downlink format (DF) from the first byte
-   uint8_t df = (buffer[0] >> 3) & 0x1F; // first 5 bits
-
-   a function that returns an uint8_t, (takes in range -- can be 1-1 or 22-22 etc, const std::vector<uint8_t>& buffer)
-        size_t buffer.size();
-        lv = 22 // low value
-        hv = 31 // high value
-        8
-        lv = 22  // low value
-        // determine buffer index low value
-        low_buffer = (lv / 8)  // 2
-        // determine shift
-        low_shift = (lv % 8)       // 6
-
-        // determine buffer index high value
-        high_buffer = (hv / 8)  // 3
-        // determine shift
-        high_shift = (hv % 8)   //  7
-
-
-
-        00000000 0
-        00000000 1
-        00000000 2
-        00000000 3
-    
-    */
-

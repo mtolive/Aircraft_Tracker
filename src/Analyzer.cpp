@@ -2,8 +2,33 @@
 
 void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
     message.initializeFromBuffer(buffer);
+    // set Data struct
+    setIcao(message.getIcao());
+    setMessage(message.getMessage());
+    // The plan: Create a Filter class and Filter here. ADSB will decode.
+    // upon initialization message will set icao / df / tc
+    if(filter.filterIdMsg(message.getDownlinkFormat(), message.getTypeCode())){                         // if is correct message type 
+        if(storedIcaos.find(message.getIcao()) == storedIcaos.end()){  // if icao is not known
+            message.extractCallsign(message.getMessage());
+            setCallsign(message.getCallsign());
+            storedIcaos[message.getIcao()].callsign = message.getCallsign();
+            
+            std::cout << "Initial msg ICAO (" << message.getIcao() << "), Callsign (" << message.getCallsign() << "): ";
+            print_hex(message.getMessage());
+            }  
+    }else if(filter.filterVelocityMsg(message.getDownlinkFormat(), message.getTypeCode())){
+        if(storedIcaos.find(message.getIcao()) != storedIcaos.end()){  // if icao is not known
+            message.extractOe(message.getMessage());
+            setOe(message.getOddEven());
+
+            std::cout << "Related message ICAO (" << message.getIcao() << "), Callsign (" 
+                 << storedIcaos[message.getIcao()].callsign << ") (" << "OE (" << static_cast<int>(getOe()) << ") : ";
+                print_hex(buffer);
+        }
+    }
 }
 
+/* Format Functions */
 std::vector<uint8_t> Analyzer::hexStringToVector(std::string hexString){
     size_t length = hexString.length();
     std::vector<uint8_t> byteVector;
@@ -54,4 +79,38 @@ void Analyzer::print_hex(const std::vector<uint8_t>& buffer) const {
         std::setfill('0') << static_cast<int>(buffer[i]);
     }
     std::cout << std::endl;
+}
+
+/* Set Functions */
+void Analyzer::setIcao(const std::string& icao){
+    data.icao = icao;
+}
+
+void Analyzer::setMessage(const std::vector<uint8_t>& message){
+    data.message = message;
+}
+
+void Analyzer::setCallsign(const std::string& callsign){
+    data.callsign = callsign;
+}
+    
+void Analyzer::setOe(const uint8_t oe){
+    data.oe = oe;
+}
+
+/* Get Functions */
+const std::string& Analyzer::getIcao() const{
+    return data.icao;
+}
+
+const std::vector<uint8_t>& Analyzer::getMessage() const{
+    return data.message;
+}
+
+const std::string& Analyzer::getCallsign() const{
+    return data.callsign;
+}
+
+const uint8_t Analyzer::getOe() const{
+    return data.oe;
 }
