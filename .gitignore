@@ -1,6 +1,8 @@
 # Files
 graveyard.txt
 pyMode.py
+bsa
+logic.txt
 
 # Directories
 /myenv/
@@ -37,4 +39,4 @@ pyMode.py
 *.exe
 *.out
 *.app
-*
+
