@@ -1,9 +1,7 @@
 # Aircraft_Tracker
 
-source myenv/bin/activate
-
 TODO:
 
-Centralize print statements 
-
+Velocity Message Logic
+PyGUI logic
 
