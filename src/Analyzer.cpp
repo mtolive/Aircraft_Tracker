@@ -23,14 +23,14 @@ Analyzer::Data Analyzer::initData(ADSBMessage& message){
 }
 
 void Analyzer::initEvenMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
-    Data& evenData = std::get<0>(tuple);
+    auto& [evenData, _] = tuple;
     evenData.oe = message.getOddEven(); // Ensure this reflects the message state
     evenData.message = message.getMessage();
     evenData.icao = message.getIcao();
 }
 
 void Analyzer::initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
-    Data& oddData = std::get<1>(tuple);
+    auto& [_, oddData] = tuple;
     oddData.oe = message.getOddEven(); // Should be consistent with message state
     oddData.message = message.getMessage();
     oddData.icao = message.getIcao();
