@@ -3,8 +3,10 @@ import time
 import threading
 import curses
 import signal
-from pyModeS.decoder.bds.bds08 import callsign
-from pyModeS.decoder.adsb import velocity, altitude
+# from pyModeS.decoder.bds.bds08 import callsign
+# from pyModeS.decoder.adsb import velocity, altitude
+import pyModeS as pms
+
 
 # Dictionary to hold the ICAO data
 icao_data = {}
@@ -27,12 +29,34 @@ def update_screen(stdscr):
     stdscr.clear()  # Clear the screen before updating
 
     # Display the header with the spinner
-    header = f"ICAO     Callsign     Velocity    Altitude   Messages  {spinner[spinner_idx]}"
+    header = f"ICAO     Callsign     Velocity    Heading     Altitude   Messages  {spinner[spinner_idx]}"
     stdscr.addstr(0, 0, header)
 
     # Loop through the dictionary and display each ICAO entry
     for row, (icao, info) in enumerate(icao_data.items(), start=1):
-        display_line = f"{icao:8} {info['callsign']:12} {info['velocity']:10} {info['altitude']:10} {info['msg_count']:8}"
+        # Break if the row exceeds the terminal's height
+        if row >= curses.LINES - 1:
+            break
+
+        # Retrieve callsign and ensure it doesn't default to N/A if data exists
+        callsign = str(info.get('callsign')) if info.get('callsign') is not None else "N/A"
+
+        # Extract velocity as a tuple and format for separate velocity and heading columns
+        velocity_data = info.get('velocity', ('N/A', 'N/A'))
+        if isinstance(velocity_data, tuple):
+            velocity = f"{velocity_data[0]:.1f}" if velocity_data[0] is not None else "N/A"
+            heading = f"{velocity_data[1]:.0f}°" if velocity_data[1] is not None else "N/A"
+        else:
+            velocity = str(velocity_data)[:8]  # Limit to 8 characters if it's not a tuple
+            heading = "N/A"
+
+        # Truncate altitude to fit in 8 characters
+        altitude = str(info.get('altitude', 'N/A'))[:8]
+        
+        msg_count = str(info.get('msg_count', 'N/A'))
+
+        # Format and display the line
+        display_line = f"{icao:8} {callsign:12} {velocity:10} {heading:10} {altitude:10} {msg_count:8}"
         stdscr.addstr(row, 0, display_line)
 
     stdscr.refresh()  # Refresh the screen to show the updated data
@@ -61,17 +85,25 @@ def receive_messages():
                 continue
 
             try:
+                cs, vel, alt = None, None, None
+
+                tc = pms.adsb.typecode(hex_message)
+                
                 # Extract the ICAO address (first 6 hex characters)
-                icao = hex_message[:6].upper()
+
+                icao = pms.adsb.icao(hex_message)
 
                 # Decode callsign (if applicable, using pyModeS)
-                cs = callsign(hex_message)
+                if tc in range(1,5):
+                    cs = pms.adsb.callsign(hex_message)
 
                 # Decode velocity (if applicable, using pyModeS)
-                vel = velocity(hex_message)
+                if tc == 19:
+                    vel = pms.adsb.velocity(hex_message)
 
                 # Decode altitude (if applicable, using pyModeS)
-                alt = altitude(hex_message)
+                if tc in range(9,19):
+                    alt = pms.adsb.altitude(hex_message)
 
                 # Update the ICAO dictionary with the new data and increment the message count
                 if icao not in icao_data:
