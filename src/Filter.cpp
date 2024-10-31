@@ -41,3 +41,7 @@ bool Filter::filterEvenMsg(uint8_t df, uint8_t tc, uint8_t oe){
 bool Filter::filterPosMsg(uint8_t df, uint8_t tc){
     return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 9, 18));
 }
+
+bool Filter::filterVelocityMsg(uint8_t df, uint8_t tc){
+    return (filterByDownlinkFormat(df, 17) && filterByTypeCode(tc, 19));
+}

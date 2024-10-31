@@ -21,8 +21,6 @@ public:
     bool filterByIcao(const std::string& icao, const std::string& expectedIcao);
     bool filterByCallSign(const std::string& callsign, const std::string& expectedCs);
     bool filterOddEven(uint8_t oe, uint8_t expectedOe);
-    //std::vector<uint8_t> filterIdMsg(std::vector<uint8_t> message);
-    //std::tuple<std::vector<uint8_t>, std::vector<uint8_t>> filterVelocityMsg(std::vector<uint8_t> message);
     bool filterIdMsg(uint8_t df, uint8_t tc);
     bool filterOddMsg(uint8_t df, uint8_t tc, uint8_t oe);
     bool filterEvenMsg(uint8_t df, uint8_t tc, uint8_t oe);
