@@ -2,14 +2,13 @@
 
 void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
     message.initializeFromBuffer(buffer);    // init ADSB message
-    //nitData(message);                       // init data structure
-    // If it is ID message type, and is NOT known
+
     if(filter.filterIdMsg(message.getDownlinkFormat(), message.getTypeCode())){
         analyzeIdMsg(message);        
-    // Else if is velocity message type, and IS known
     }else if(filter.filterPosMsg(message.getDownlinkFormat(), message.getTypeCode())){
-        // if message is Even '0', then store position message in map
        analyzePosMsg(message);
+    }else if(filter.filterVelocityMsg(message.getDownlinkFormat(), message.getTypeCode())){
+       analyzeVelMsg(message);
     }
 }
 
@@ -36,13 +35,15 @@ void Analyzer::initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
     oddData.icao = message.getIcao();
 }
 
-/* Analyze Message Function */
+/* Analyze Message Functions */
 const std::vector<uint8_t>& Analyzer::analyzeIdMsg(ADSBMessage& message){
     if(storedIcaos.find(message.getIcao()) == storedIcaos.end()){  // if icao is not known
         auto data = initData(message);
         message.extractCallsign(message.getMessage());
         data.callsign = message.getCallsign();
         storedIcaos[message.getIcao()] = data;
+        //std::cout << "cs: ";
+        print_hex(message.getMessage());
     }
     return message.getMessage();  
 }
@@ -58,8 +59,9 @@ const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) {
             auto& [evenData, oddData] = posMessages[message.getIcao()];
             // Only process if evenData has been initialized
             if (evenData.icao == message.getIcao()) { 
+                // if(evenData.timestamp)
                 initOddMsg(message, posMessages[message.getIcao()]);
-                std::cout << "Even Data - OE: " << static_cast<int>(evenData.oe)
+                /*std::cout << "Even Data - OE: " << static_cast<int>(evenData.oe)
                           << ", ICAO: " << evenData.icao << ", CS: " << storedIcaos[message.getIcao()].callsign 
                           << " , Message: ";
                 print_hex(evenData.message);
@@ -67,8 +69,14 @@ const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) {
                 std::cout << "Odd Data - OE: " << static_cast<int>(oddData.oe)
                           << ", ICAO: " << oddData.icao<< ", CS: " << storedIcaos[message.getIcao()].callsign
                            << " , Message: ";
-                print_hex(oddData.message);
-                posMessages.erase(message.getIcao());            
+                print_hex(oddData.message);*/
+                //std::cout << "even: ";
+                print_hex(evenData.message);
+                //std::cout << "odd: ";
+                print_hex(oddData.message);  
+
+                posMessages.erase(message.getIcao());
+                      
             } 
         }
     }
@@ -76,6 +84,14 @@ const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) {
 }
 
 const std::vector<uint8_t>& Analyzer::analyzeVelMsg(ADSBMessage& message){
+    // if message ICAO is stored
+    if(storedIcaos.find(message.getIcao()) != storedIcaos.end()){
+        /*std::cout << "Vmessage Icao: " << message.getIcao() << ", Tc = " 
+                  << static_cast<int>(message.getTypeCode());
+        std::cout << std::endl; */
+        //std::cout << "vel: ";
+        print_hex(message.getMessage());        
+    }
     return message.getMessage();
 }
 
