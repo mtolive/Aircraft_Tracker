@@ -2,6 +2,14 @@
 
 TODO:
 
-Velocity Message Logic
-PyGUI logic
+Split pyGUI.py to separate modules
+
+
+Filter anamolies
+
+
+Document
+
+
+Cleanup
 
