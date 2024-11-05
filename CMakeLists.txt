@@ -17,9 +17,8 @@ add_executable(tracker
     src/main.cpp
 )
 
-# You can add any specific compiler flags if needed
 # set_target_properties(tracker PROPERTIES COMPILE_FLAGS "-Wall")
-# Add a custom target to run the pipeline after compilation
+# Custom target to run the pipeline
 add_custom_target(acTracker
     COMMAND rtl_adsb | ${CMAKE_BINARY_DIR}/tracker | python3 ${CMAKE_SOURCE_DIR}/src/GUI/main.py
     DEPENDS tracker
