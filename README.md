@@ -49,8 +49,8 @@ The program is divided into two main components:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/adsb-message-decoder.git
-   cd adsb-message-decoder
+   git clone https://github.com/mtolive/Aircraft_Tracker.git
+   cd Aircraft_Tracker
    ```
 
 2. **Install RTL-SDR Software**
@@ -61,15 +61,17 @@ The program is divided into two main components:
    pip install pyModeS
    ```
 
-4. **Compile the C++ Program**
+4. **Run the following CMake commands:**
    ```bash
-   g++ -std=c++17 -o adsb_processor src/*.cpp -I include -lrtlsdr
+    mkdir -p build
+    cd build
+    cmake ..
    ```
 
 ## Usage
-Run the program with the following command to start capturing and visualizing ADS-B messages:
+Run following CMake command to start capturing and visualizing ADS-B messages:
 ```bash
-rtl_adsb | ./adsb_processor | python main.py
+make acTracker
 ```
 
 Press `Ctrl+C` to exit.
