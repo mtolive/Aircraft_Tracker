@@ -4,6 +4,6 @@ icao_time = {}
 spinner = ['|', '/', '-', '\\']
 exit_flag = False
 
-inactive_time = 45
-nochange_time = 120
+inactive_time = 120
+nochange_time = 500
 onemsg_time = 20
