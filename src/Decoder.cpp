@@ -1,7 +1,6 @@
 #include "../include/Decoder.h"
 #include <bitset>
 
-
 // Decode ADSB message call sign (bits 41-88) type code: 1-4 inclusive
 std::string Decoder::decodeCallSign(const std::vector<uint8_t>& message) {
     auto callsignBits = extractBits(message, 41, 88);
