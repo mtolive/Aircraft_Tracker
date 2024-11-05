@@ -9,16 +9,22 @@ void ADSBMessage::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
          * the other values are conditional and will be dependent
          * on these valuese DF, TC, ICAO
         */
-        setBuffer(buffer);
-        extractDf(buffer);
-        extractTc(buffer);
-        extractIcao(buffer);
+        setBuffer(buffer);    // 14-byte hex message
+        extractDf(buffer);    // DF
+        extractTc(buffer);    // TC
+        extractIcao(buffer);  // ICAO
     } else {
         throw std::invalid_argument("Invalid frame size");
     }
 }
 
-/* Extraction Functions*/
+/* Extraction Functions (decoder wrapper functions) - Set class variables
+**  ICAO (unique aircraft identifier)
+**  TC (type code) - inidicates what type of ADSB message is recieved
+**  DF (downlink file) - inidicates if ADSB, non adsb (short long)
+**  OE (Odd even) indicates if ADSB ID message is odd or even
+**  CS (Call sign) extracted from ADSB ID messages (DF == 17 && TC is in range 1-4 inclusive)
+*/
 void ADSBMessage::extractIcao(const std::vector<uint8_t>& message){
     setIcao(decoder.decodeIcao(message));
 }
@@ -38,27 +44,25 @@ void ADSBMessage::extractCallsign(const std::vector<uint8_t>& message){
     setCallsign(decoder.decodeCallSign(message));
 }
 
-// will add velocity one day
-
 /**** Set Functions ****/
-void ADSBMessage::setBuffer(const std::vector<uint8_t>& buffer) {
-    message = buffer; // rawData is still a class member variable
-}
+void ADSBMessage::setBuffer(const std::vector<uint8_t>& message) {
+    this->message = message; 
+} 
 
 void ADSBMessage::setDownlinkFormat(const uint8_t df) {
-    this->df = df; // Access the df member inside the ADSBData struct
+    this->df = df; 
 }
 
 void ADSBMessage::setTypeCode(const uint8_t tc) {
-    this->tc = tc; // Access the tc member inside the ADSBData struct
+    this->tc = tc; 
 }
 
 void ADSBMessage::setIcao(const std::string& icao) {
-    this->icao = std::move(icao); // Access the icao member inside the ADSBData struct
+    this->icao = std::move(icao); 
 }
 
 void ADSBMessage::setCallsign(const std::string& callsign) {
-    this->callsign = std::move(callsign); // Access the callsign member inside the ADSBData struct
+    this->callsign = std::move(callsign); 
 }
 
 void ADSBMessage::setOddEven(const uint8_t oddEven){
@@ -91,5 +95,5 @@ const uint8_t ADSBMessage::getOddEven() const{
 }
 
 const size_t ADSBMessage::getFrameSize() const {
-    return FRAME_SIZE; // Assuming this is a class constant and hasn't changed
+    return FRAME_SIZE; // Will always be 14, until non ADSB messages are added
 }

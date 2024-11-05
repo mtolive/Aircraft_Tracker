@@ -13,7 +13,11 @@ def receive_messages():
             if config.exit_flag:
                 break
 
+            chars_to_remove = "*,;"
             hex_message = line.strip()
+            for char in chars_to_remove:
+                hex_message = hex_message.replace(char, "")
+            
             if len(hex_message) != 28:
                 continue
 

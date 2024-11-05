@@ -9,6 +9,7 @@ debug_print.txt
 # Directories
 /myenv/
 /src/GUI/__pycache__/
+/build/
 
 # Prerequisites
 *.d

@@ -20,18 +20,17 @@ void handle_sigint(int signum) {
 int main() {
     std::vector<uint8_t> buffer(BUFFER_SIZE);
     ssize_t len;
-    // create instances for injection
+    // create instances for injection / pass references
     DataConverter converter;
-    Decoder decoder(converter); // Create an instance of Filter
+    Decoder decoder(converter);
     ADSBMessage message(decoder); 
     Filter filter; 
-    Analyzer analyzer(message, filter); // Pass the filter instance to Analyzer
+    Analyzer analyzer(message, filter);
 
     // Setup signal handler for SIGINT (Ctrl+C)
     std::signal(SIGINT, handle_sigint);
 
     std::string hexString;
-
     // Read from standard input (pipe from rtl_adsb)
     while (std::getline(std::cin, hexString)) {
 
@@ -46,21 +45,5 @@ int main() {
             std::cerr << "Failed to parse hex string!" << std::endl;
         }
     }
-    
-   // for single line echo test
-   /*std::getline(std::cin, hexString);
-
-        // Trim any whitespace characters and format
-        hexString = analyzer.trim(hexString);
-        // Convert the hex string to a byte vector
-        std::vector<uint8_t> byteVector = analyzer.hexStringToVector(hexString);
-        if (!byteVector.empty()) {
-            // Analyze the hex string
-            analyzer.analyze(byteVector);
-        } else {
-            std::cerr << "Failed to parse hex string!" << std::endl;
-        }*/
-    
-
     return EXIT_SUCCESS;
 }

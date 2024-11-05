@@ -35,7 +35,7 @@ private:
     Data initData(ADSBMessage& message);
     void initEvenMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple);
     void initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple);
-    void initTupleOe(std::tuple<Data, Data> tuple);
+    //void initTupleOe(std::tuple<Data, Data> tuple);
 
     /* Analyze Message Function */
     const std::vector<uint8_t>& analyzeIdMsg(ADSBMessage& message);
