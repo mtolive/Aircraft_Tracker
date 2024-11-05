@@ -1,6 +1,7 @@
 # Aircraft Tracker
 
 This project captures, decodes, and displays ADS-B messages transmitted by aircraft using a combination of C++ and Python. The system processes incoming data streams, extracting and displaying: ICAO code, Callsign, Velocity, Heading, Altitude, Latitude, and longitude - in real time. The architecture employs a modular approach with dedicated classes for structured decoding and analysis.
+![Screenshot (134)](https://github.com/user-attachments/assets/d82f1b27-c17f-44e0-8b2b-c27009e60fa3)
 
 ## Table of Contents
 - [Overview](#overview)
