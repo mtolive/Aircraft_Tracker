@@ -20,6 +20,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
+        # sleep until initial output from rtl_adsb is displayed
         time.sleep(1)
         gui_thread = threading.Thread(target=lambda: curses.wrapper(gui_loop))
         gui_thread.start()

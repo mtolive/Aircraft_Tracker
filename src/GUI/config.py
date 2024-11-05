@@ -1,3 +1,4 @@
+# initialize config data
 icao_data = {}
 icao_time = {}
 spinner = ['|', '/', '-', '\\']

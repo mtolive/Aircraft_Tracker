@@ -23,13 +23,13 @@ def update_screen(stdscr):
         if row >= curses.LINES - 1:
             break
 
-        callsign = str(info.get('callsign', 'N/A'))
         # If there is no callsign we don't display the data
+        callsign = str(info.get('callsign', 'N/A'))
         if info.get('callsign') == 'N/A':
             continue
 
         # velocity can be (None | tuple of 4), where velocity and heading are first two indices
-        # and can either be (None | Float). From pyModeS function adsb.velocity()
+        # both can either be (None | Float). Returned from pyModeS function adsb.velocity()
         velocity_data = info.get('velocity', ('N/A', 'N/A'))
         if isinstance(velocity_data, tuple):
             velocity = f"{velocity_data[0]:.1f}" if velocity_data[0] else "N/A"
@@ -38,7 +38,7 @@ def update_screen(stdscr):
             velocity = "N/A"
             heading = "N/A"
         
-        # position can be (None | tuple[float, float])
+        # position can be (None | tuple[float, float]). Returned from pyModeS function adsb.position()
         position_data = info.get('position', ('N/A', 'N/A'))
         if isinstance(position_data, tuple):
             lat = f"{position_data[0]:.3f}" if position_data[0] else "N/A"
@@ -47,17 +47,16 @@ def update_screen(stdscr):
             lat = "N/A"
             lon = "N/A"
         
-        # altitude can be (None | Float) -- msg_count starts at int 1
+        # altitude can be (None | Float). Returned from pyModeS function adsb.altitude()
         altitude = str(info.get('altitude', 'N/A'))[:8] + "ft" if info.get('altitude') != 'N/A' else "N/A"
-        msg_count = str(info.get('msg_count', 'N/A'))
-
+        msg_count = str(info.get('msg_count', 'N/A')) # msg_count starts at int 1
+        # keep live time up-to-date (in seconds)
         live_time = int(time.time() - config.icao_time.get(icao, time.time()))
         live_time_display = f"{live_time} sec"
 
         display_line = f"{icao:<8} {callsign:<12} {velocity:<16} {heading:<11} {altitude:<10} {lat:<9} {lon:<9} {msg_count:<9} {live_time_display:<5}"
         stdscr.addstr(row, 0, display_line)
-
-        row += 1
+        row += 1  # keep track of rows to compare against curses.LINES-1
 
     stdscr.refresh()
     spinner_idx = (spinner_idx + 1) % len(config.spinner)
