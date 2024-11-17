@@ -1,8 +1,8 @@
-#include "../include/ADSBMessage.h"
+#include "../include/ADSB_Message.h"
 
-const size_t ADSBMessage::FRAME_SIZE = 14;
+const size_t ADSB_Message::FRAME_SIZE = 14;
 
-void ADSBMessage::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
+void ADSB_Message::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
     if (buffer.size() >= getFrameSize()) {
         /*
          * These three values are common to all ADSB messages
@@ -25,75 +25,75 @@ void ADSBMessage::initializeFromBuffer(const std::vector<uint8_t>& buffer) {
 **  OE (Odd even) indicates if ADSB ID message is odd or even
 **  CS (Call sign) extracted from ADSB ID messages (DF == 17 && TC is in range 1-4 inclusive)
 */
-void ADSBMessage::extractIcao(const std::vector<uint8_t>& message){
+void ADSB_Message::extractIcao(const std::vector<uint8_t>& message){
     setIcao(decoder.decodeIcao(message));
 }
 
-void ADSBMessage::extractTc(const std::vector<uint8_t>& message){
+void ADSB_Message::extractTc(const std::vector<uint8_t>& message){
     setTypeCode(decoder.decodeTypeCode(message));
 }
-void ADSBMessage::extractDf(const std::vector<uint8_t>& message){
+void ADSB_Message::extractDf(const std::vector<uint8_t>& message){
     setDownlinkFormat(decoder.decodeDownlinkFormat(message));
 }
 
-void ADSBMessage::extractOe(const std::vector<uint8_t>& message){
+void ADSB_Message::extractOe(const std::vector<uint8_t>& message){
     setOddEven(decoder.decodeOddEven(message));
 }
 
-void ADSBMessage::extractCallsign(const std::vector<uint8_t>& message){
+void ADSB_Message::extractCallsign(const std::vector<uint8_t>& message){
     setCallsign(decoder.decodeCallSign(message));
 }
 
 /**** Set Functions ****/
-void ADSBMessage::setBuffer(const std::vector<uint8_t>& message) {
+void ADSB_Message::setBuffer(const std::vector<uint8_t>& message) {
     this->message = message; 
 } 
 
-void ADSBMessage::setDownlinkFormat(const uint8_t df) {
+void ADSB_Message::setDownlinkFormat(const uint8_t df) {
     this->df = df; 
 }
 
-void ADSBMessage::setTypeCode(const uint8_t tc) {
+void ADSB_Message::setTypeCode(const uint8_t tc) {
     this->tc = tc; 
 }
 
-void ADSBMessage::setIcao(const std::string& icao) {
+void ADSB_Message::setIcao(const std::string& icao) {
     this->icao = std::move(icao); 
 }
 
-void ADSBMessage::setCallsign(const std::string& callsign) {
+void ADSB_Message::setCallsign(const std::string& callsign) {
     this->callsign = std::move(callsign); 
 }
 
-void ADSBMessage::setOddEven(const uint8_t oddEven){
+void ADSB_Message::setOddEven(const uint8_t oddEven){
     this->oddEven = oddEven;
 }
 
 /**** Get Functions ****/
-const std::vector<uint8_t>& ADSBMessage::getMessage() const{
+const std::vector<uint8_t>& ADSB_Message::getMessage() const{
     return message;
 }
 
-const uint8_t ADSBMessage::getDownlinkFormat() const {
+const uint8_t ADSB_Message::getDownlinkFormat() const {
     return df;
 }
 
-const uint8_t ADSBMessage::getTypeCode() const {
+const uint8_t ADSB_Message::getTypeCode() const {
     return tc;
 }
 
-const std::string& ADSBMessage::getIcao() const {
+const std::string& ADSB_Message::getIcao() const {
     return icao; 
 }
 
-const std::string& ADSBMessage::getCallsign() const {
+const std::string& ADSB_Message::getCallsign() const {
     return callsign;
 }
 
-const uint8_t ADSBMessage::getOddEven() const{
+const uint8_t ADSB_Message::getOddEven() const{
     return oddEven;    
 }
 
-const size_t ADSBMessage::getFrameSize() const {
+const size_t ADSB_Message::getFrameSize() const {
     return FRAME_SIZE; // Will always be 14, until non ADSB messages are added
 }

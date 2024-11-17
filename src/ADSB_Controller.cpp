@@ -1,7 +1,7 @@
-#include "../include/Analyzer.h"
+#include "../include/ADSB_Controller.h"
 
 // Public
-void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
+void ADSB_Controller::analyze(const std::vector<uint8_t>& buffer) {
     message.initializeFromBuffer(buffer);    // init ADSB message
 
     if(filter.filterIdMsg(message.getDownlinkFormat(), message.getTypeCode())){
@@ -16,7 +16,7 @@ void Analyzer::analyze(const std::vector<uint8_t>& buffer) {
 // Private
 /* Initialize Data */
 // Initizlize Data struct
-Analyzer::Data Analyzer::initData(ADSBMessage& message){
+ADSB_Controller::Data ADSB_Controller::initData(ADSB_Message& message){
     Data data;
     data.icao = message.getIcao();
     data.message = message.getMessage();
@@ -24,14 +24,14 @@ Analyzer::Data Analyzer::initData(ADSBMessage& message){
     return data;
 }
 // Initialize Even Data struct - Initialize first half of tuple[0]
-void Analyzer::initEvenMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
+void ADSB_Controller::initEvenMsg(ADSB_Message& message, std::tuple<Data, Data>& tuple) {
     auto& [evenData, _] = tuple;
     evenData.oe = message.getOddEven();
     evenData.message = message.getMessage();
     evenData.icao = message.getIcao();
 }
 // Initialize Odd Data struct - Initialize second half of tuple[1]
-void Analyzer::initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
+void ADSB_Controller::initOddMsg(ADSB_Message& message, std::tuple<Data, Data>& tuple) {
     auto& [_, oddData] = tuple;
     oddData.oe = message.getOddEven();
     oddData.message = message.getMessage();
@@ -43,7 +43,7 @@ void Analyzer::initOddMsg(ADSBMessage& message, std::tuple<Data, Data>& tuple) {
 ** data where a call sign is first identified. The message arg must be downlink 17, with 
 ** type code 1-4 inclusive.
 */
-const std::vector<uint8_t>& Analyzer::analyzeIdMsg(ADSBMessage& message){
+const std::vector<uint8_t>& ADSB_Controller::analyzeIdMsg(ADSB_Message& message){
     if(storedIcaos.find(message.getIcao()) == storedIcaos.end()){  // if icao is not known
         auto data = initData(message);
         message.extractCallsign(message.getMessage());
@@ -60,7 +60,7 @@ const std::vector<uint8_t>& Analyzer::analyzeIdMsg(ADSBMessage& message){
 ** When the decoding logic is added in, we'll also add in timestamps. Finally once a pair
 ** is made we need to clear the posMessages umap to keep messages up to date. 
 */
-const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) { 
+const std::vector<uint8_t>& ADSB_Controller::analyzePosMsg(ADSB_Message& message) { 
     if (storedIcaos.find(message.getIcao()) != storedIcaos.end()) { // if ICAO is known
         message.extractOe(message.getMessage()); // Determine if odd or even
         if (!message.getOddEven()) { // If message is even
@@ -85,7 +85,7 @@ const std::vector<uint8_t>& Analyzer::analyzePosMsg(ADSBMessage& message) {
 ** Decoding will be implemented soon. Now message is sent to python 
 ** GUI to be decoded my pyModeS
 */
-const std::vector<uint8_t>& Analyzer::analyzeVelMsg(ADSBMessage& message){
+const std::vector<uint8_t>& ADSB_Controller::analyzeVelMsg(ADSB_Message& message){
     if(storedIcaos.find(message.getIcao()) != storedIcaos.end()){
         print_hex(message.getMessage());        
     }
@@ -93,14 +93,14 @@ const std::vector<uint8_t>& Analyzer::analyzeVelMsg(ADSBMessage& message){
 }
 
 // for future use in decoding position messages
-double Analyzer::timeDifferenceInSeconds(const Data& data1, const Data& data2) {
+double ADSB_Controller::timeDifferenceInSeconds(const Data& data1, const Data& data2) {
     auto duration = data2.timestamp - data1.timestamp;
     return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 }
 
 // Public Functions
 /* Format Functions */
-std::vector<uint8_t> Analyzer::hexStringToVector(std::string hexString){
+std::vector<uint8_t> ADSB_Controller::hexStringToVector(std::string hexString){
     size_t length = hexString.length();
     std::vector<uint8_t> byteVector;
     if(length % 2 != 0){     // ensure is multiple of 2
@@ -116,13 +116,13 @@ std::vector<uint8_t> Analyzer::hexStringToVector(std::string hexString){
 }
 
 // rtl_adsb ouput is: *hexvalues; we will remove * and ; from first/last
-std::string Analyzer::trim(std::string hexString){
+std::string ADSB_Controller::trim(std::string hexString){
     size_t first = hexString.find_first_not_of(" \t\r\n*");
     size_t last = hexString.find_last_not_of(" \t\r\n;");
     return (first == std::string::npos) ? "" : hexString.substr(first, last - first + 1);
 }
 
-std::vector<uint8_t> Analyzer::strToByteVec(std::string hexStr){
+std::vector<uint8_t> ADSB_Controller::strToByteVec(std::string hexStr){
     size_t length = hexStr.size();
     std::vector<uint8_t> byteVector;
     if(length % 2 != 0){   // check that there is even amount of chars
@@ -138,7 +138,7 @@ std::vector<uint8_t> Analyzer::strToByteVec(std::string hexStr){
 }
 
 // Print hex from vector<uint8_T>
-void Analyzer::print_hex(const std::vector<uint8_t>& buffer) const {
+void ADSB_Controller::print_hex(const std::vector<uint8_t>& buffer) const {
     size_t size = buffer.size();
     for(int i = 0; i < size; i++){
         std::cout << std::hex << 
