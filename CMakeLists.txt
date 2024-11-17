@@ -9,10 +9,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add executable for the C++ tracker
 add_executable(tracker
-    src/ADSBMessage.cpp
-    src/Analyzer.cpp
+    src/ADSB_Message.cpp
+    src/ADSB_Controller.cpp
     src/DataConverter.cpp
-    src/Decoder.cpp
+    src/ADSB_Decoder.cpp
     src/Filter.cpp
     src/main.cpp
 )
