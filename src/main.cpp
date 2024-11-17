@@ -4,10 +4,10 @@
 #include <string>
 #include <csignal>
 #include <algorithm> // Include this header for std::remove
-#include "../include/Analyzer.h"
-#include "../include/DataConverter.h"
-#include "../include/Decoder.h"
-#include "../include/ADSBMessage.h"
+//#include "../include/ADSB_Decoder.h"
+//#include "../include/DataConverter.h"
+#include "../include/ADSB_Controller.h"
+#include "../include/ADSB_Message.h"
 
 #define BUFFER_SIZE 16384  // 16KB
 
@@ -22,10 +22,10 @@ int main() {
     ssize_t len;
     // create instances for injection / pass references
     DataConverter converter;
-    Decoder decoder(converter);
-    ADSBMessage message(decoder); 
+    ADSB_Decoder decoder(converter);
+    ADSB_Message message(decoder); 
     Filter filter; 
-    Analyzer analyzer(message, filter);
+    ADSB_Controller controller(message, filter);
 
     // Setup signal handler for SIGINT (Ctrl+C)
     std::signal(SIGINT, handle_sigint);
@@ -35,12 +35,12 @@ int main() {
     while (std::getline(std::cin, hexString)) {
 
         // Trim any whitespace characters and format
-        hexString = analyzer.trim(hexString);
+        hexString = controller.trim(hexString);
         // Convert the hex string to a byte vector
-        std::vector<uint8_t> byteVector = analyzer.hexStringToVector(hexString);
+        std::vector<uint8_t> byteVector = controller.hexStringToVector(hexString);
         if (!byteVector.empty()) {
             // Analyze the hex string
-            analyzer.analyze(byteVector);
+            controller.analyze(byteVector);
         } else {
             std::cerr << "Failed to parse hex string!" << std::endl;
         }
