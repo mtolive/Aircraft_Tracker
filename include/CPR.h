@@ -22,7 +22,7 @@ private:
     double latitude(double latitude);
      /* Time functions*/
     double timeDifferenceInSeconds(const auto oTime, const auto eTime);
-    bool timeIsGreater(const auto time1, const auto time2);
+    bool timeIsGreater(const auto time1, const auto time2); 
 };
 
 #endif

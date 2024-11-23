@@ -5,7 +5,7 @@
 */
 /*
     for both even and odd timestamps: auto = std::chrono::time_point<std::chrono::system_clock>
-
+ 
 */
 
 // private
