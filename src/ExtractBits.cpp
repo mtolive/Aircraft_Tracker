@@ -48,7 +48,6 @@ std::vector<uint8_t> ExtractBits::stov(const std::string& str) {
     if (!isBinary(str)) {
         throw std::invalid_argument("Input string is not binary");
     }
-
     // Process the string in chunks of 8 bits
     for (size_t i = 0; i < str.size(); i += 8) {
         std::string byteStr = str.substr(i, 8); // Take 8 characters
@@ -62,3 +61,5 @@ std::vector<uint8_t> ExtractBits::stov(const std::string& str) {
 bool ExtractBits::isBinary(const std::string& str){
     return str.find_first_not_of("01") == std::string::npos;
 }
+
+

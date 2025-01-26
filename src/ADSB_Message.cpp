@@ -69,6 +69,10 @@ void ADSB_Message::setOddEven(const uint8_t oddEven){
     this->oddEven = oddEven;
 }
 
+void ADSB_Message::setTimeStamp(){
+    timestamp = std::chrono::system_clock::now();
+}
+
 /**** Get Functions ****/
 const std::vector<uint8_t>& ADSB_Message::getMessage() const{
     return message;
@@ -96,4 +100,8 @@ const uint8_t ADSB_Message::getOddEven() const{
 
 const size_t ADSB_Message::getFrameSize() const {
     return FRAME_SIZE; // Will always be 14, until non ADSB messages are added
+}
+
+const std::chrono::time_point<std::chrono::system_clock> ADSB_Message::getTimeStamp() const{
+    return timestamp;
 }

@@ -10,6 +10,7 @@
 #include <unordered_map> // for std::unordered_map
 #include <unordered_set>
 #include <set> // for std::set
+#include <chrono>
 
 #include "../include/ADSB_Decoder.h"
 #include "/home/m/Aircraft_Tracker/include/interfaces/ModeS_Message.h"
@@ -25,6 +26,7 @@ private:
     std::string icao;  // ICAO address
     std::string callsign; // Call sign
     static const size_t FRAME_SIZE;
+    std::chrono::time_point<std::chrono::system_clock> timestamp;
 
 public:
  // Constructor injects Decoder instance
@@ -46,7 +48,8 @@ public:
     void setIcao(const std::string& icao);
     void setCallsign(const std::string& callsign);
     void setOddEven(const uint8_t oddEven);
-    
+    void setTimeStamp();
+
     /* Get Methods */
     const std::vector<uint8_t>& getMessage() const;
     const uint8_t getDownlinkFormat() const;
@@ -55,5 +58,7 @@ public:
     const std::string& getCallsign() const;
     const uint8_t getOddEven() const;
     const size_t getFrameSize() const;
+    const std::chrono::time_point<std::chrono::system_clock> getTimeStamp() const;
+
 };
 #endif
